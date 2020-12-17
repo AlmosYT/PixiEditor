@@ -95,6 +95,27 @@ namespace PixiEditor.ExtensionsModule
             ScriptFiles.ToList().ForEach(x => x.Value.Options.ScriptLoader = new ScriptLoader(modules.ToArray()));
         }
 
+        public DynValue ExecuteParser(string from, string to)
+        {
+            string fTShort = from + ":" + to;
+
+            if (!parsers.Contains(fTShort))
+            {
+                throw new ArgumentException("There was no parser for those extensions", nameof(from));
+            }
+
+            FileParser parser = parsers[fTShort];
+
+            string[] sep = parser.Method.Split(':');
+
+            if (sep.Length != 2)
+            {
+                throw new Exception();
+            }
+
+            return ExecuteFunction(sep[0], sep[1]);
+        }
+
         public DynValue ExecuteMenuItem(string menuItem)
         {
             if (!MenuItems.ContainsKey(menuItem))
