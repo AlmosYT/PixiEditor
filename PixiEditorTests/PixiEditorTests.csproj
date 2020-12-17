@@ -41,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PixiEditor.ExtensionsModule\PixiEditor.ExtensionsModule.csproj" />
     <ProjectReference Include="..\PixiEditor.UpdateModule\PixiEditor.UpdateModule.csproj" />
     <ProjectReference Include="..\PixiEditor\PixiEditor.csproj" />
   </ItemGroup>
