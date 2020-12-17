@@ -9,19 +9,32 @@ namespace PixiEditor.ExtensionsModule
 {
     public class Extension
     {
-        internal readonly XDocument ConfigFile;
+        private readonly XDocument configFile;
         private readonly DirectoryInfo rootDirectory;
-        internal Dictionary<string, Script> ScriptFiles = new Dictionary<string, Script>();
-        public Dictionary<string, string> MenuItems = new Dictionary<string, string>();
-        public readonly string Name;
-        public readonly string Author;
+        private ParserCollection parsers = new ParserCollection();
+        private Dictionary<string, string> menuItems = new Dictionary<string, string>();
+        private Dictionary<string, Script> scriptFiles = new Dictionary<string, Script>();
+        private readonly string name;
+        private readonly string author;
+
+        internal XDocument ConfigFile => configFile;
+
+        internal Dictionary<string, Script> ScriptFiles => scriptFiles;
+
+        public Dictionary<string, string> MenuItems => menuItems;
+
+        public ParserCollection Parsers => parsers;
+
+        public string Name => name;
+
+        public string Author => author;
 
         public DirectoryInfo RootDirectory { get => rootDirectory; }
 
         internal Extension(DirectoryInfo rootDirectory, XDocument config)
         {
             this.rootDirectory = rootDirectory;
-            ConfigFile = config;
+            configFile = config;
             List<string> modules = new List<string>();
 
             foreach (FileInfo info in rootDirectory.EnumerateFiles("*.lua", SearchOption.AllDirectories))
@@ -60,18 +73,23 @@ namespace PixiEditor.ExtensionsModule
                 }
             }
 
-            Name = config.Root.Attribute("Name")?.Value;
+            foreach (XElement parser in config.Elements("Parser"))
+            {
+                parsers.Add(new FileParser(parser.Attribute("From").Value, parser.Attribute("To").Value, parser.Attribute("Use").Value));
+            }
+
+            name = config.Root.Attribute("Name")?.Value;
 
             if (string.IsNullOrWhiteSpace(Name))
             {
-                Name = rootDirectory.Name;
+                name = rootDirectory.Name;
             }
 
-            Author = config.Root.Attribute("Author")?.Value;
+            author = config.Root.Attribute("Author")?.Value;
 
-            if (Author == null)
+            if (author == null)
             {
-                Author = "Unknown Author";
+                author = "Unknown Author";
             }
 
             ScriptFiles.ToList().ForEach(x => x.Value.Options.ScriptLoader = new ScriptLoader(modules.ToArray()));
