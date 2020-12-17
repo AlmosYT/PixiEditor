@@ -12,9 +12,9 @@ namespace PixiEditor.ExtensionsModule
 {
     public class ExtensionManager
     {
-        private static List<Extension> extensions = new List<Extension>();
+        private List<Extension> extensions = new List<Extension>();
 
-        public static IReadOnlyCollection<Extension> LoadedExtensions => extensions;
+        public IReadOnlyCollection<Extension> LoadedExtensions => extensions;
 
         public static void RegisterType<T>() => UserData.RegisterType<T>();
 
@@ -39,7 +39,7 @@ namespace PixiEditor.ExtensionsModule
 
             extensions.Add(extension);
 
-            foreach (Script script in extensions.Select(x => x.ScriptFiles.Select(x => x.Value)))
+            foreach (Script script in extension.ScriptFiles.Values)
             {
                 foreach (KeyValuePair<string, object> pair in globals)
                 {
@@ -48,6 +48,35 @@ namespace PixiEditor.ExtensionsModule
             }
 
             return extension;
+        }
+
+        /// <summary>
+        /// Loads all extensions inside a directory.
+        /// </summary>
+        public Extension[] LoadExtensions(DirectoryInfo directory)
+        {
+            List<Extension> extensions = new List<Extension>();
+
+            foreach (DirectoryInfo subDir in directory.GetDirectories())
+            {
+                extensions.Add(LoadExtension(subDir.FullName));
+            }
+
+            return extensions.ToArray();
+        }
+
+        /// <summary>
+        /// Loads all extensions inside a directory.
+        /// </summary>
+        public Extension[] LoadExtensions(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+                return Array.Empty<Extension>();
+            }
+
+            return LoadExtensions(new DirectoryInfo(path));
         }
 
         /// <summary>

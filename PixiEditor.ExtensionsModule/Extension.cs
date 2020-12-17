@@ -65,15 +65,15 @@ namespace PixiEditor.ExtensionsModule
                 ScriptFiles.Add(relativePath, script);
             }
 
-            foreach (XElement menu in config.Elements("Menu"))
+            foreach (XElement menu in config.Root.Elements("Menu"))
             {
                 foreach (XElement menuItem in menu.Elements("MenuItem"))
                 {
-                    MenuItems.Add(menu.Attribute("Name").Value + "/" + menuItem.Value, menu.Attribute("Click").Value);
+                    MenuItems.Add(menu.Attribute("Name").Value + "/" + menuItem.Value, menuItem.Attribute("Click").Value);
                 }
             }
 
-            foreach (XElement parser in config.Elements("Parser"))
+            foreach (XElement parser in config.Root.Elements("Parser"))
             {
                 parsers.Add(new FileParser(parser.Attribute("From").Value, parser.Attribute("To").Value, parser.Attribute("Use").Value));
             }

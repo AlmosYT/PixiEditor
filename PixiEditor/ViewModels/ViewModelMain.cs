@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
+using PixiEditor.ExtensionsModule;
 using PixiEditor.Helpers;
 using PixiEditor.Models.Controllers;
 using PixiEditor.Models.Controllers.Shortcuts;
@@ -11,6 +12,7 @@ using PixiEditor.Models.DataHolders;
 using PixiEditor.Models.Dialogs;
 using PixiEditor.Models.Enums;
 using PixiEditor.Models.Events;
+using PixiEditor.Models.ExtensionsModule;
 using PixiEditor.Models.IO;
 using PixiEditor.Models.Position;
 using PixiEditor.Models.Tools;
@@ -60,6 +62,8 @@ namespace PixiEditor.ViewModels
         public PixelChangesController ChangesController { get; set; }
 
         public ShortcutController ShortcutController { get; set; }
+
+        public ExtensionManager ExtensionManager { get; set; }
 
         public ViewModelMain()
         {
@@ -133,6 +137,15 @@ namespace PixiEditor.ViewModels
                     new Shortcut(Key.N, FileSubViewModel.OpenNewFilePopupCommand, modifier: ModifierKeys.Control)
                 }
             };
+<<<<<<< HEAD
+=======
+
+            ExtensionManager = new ExtensionManager(new PlatformAccessor());
+
+            ExtensionManager.LoadExtensions(System.IO.Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PixiEditor", "Extensions"));
+
+            UndoManager.SetMainRoot(this);
+>>>>>>> Added module loading at startup
             BitmapManager.PrimaryColor = ColorsSubViewModel.PrimaryColor;
             Current = this;
         }
