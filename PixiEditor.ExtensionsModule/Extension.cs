@@ -125,7 +125,7 @@ namespace PixiEditor.ExtensionsModule
 
             Script script = new Script();
 
-            var val = script.DoFile(info.FullName);
+            script.DoFile(info.FullName);
 
             ScriptFiles.Add(relativePath, script);
         }
