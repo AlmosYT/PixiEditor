@@ -35,7 +35,7 @@ namespace PixiEditor.ExtensionsModule
         {
             string name = document.Root.Attribute("Name")?.Value;
             string author = document.Root.Attribute("Author")?.Value;
-            string description = document.Root.Element("Description").Value;
+            string description = document.Root.Element("Description")?.Value;
 
             if (name != null)
             {
