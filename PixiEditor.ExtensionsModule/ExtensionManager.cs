@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Platforms;
+using PixiEditor.ExtensionsModule.Exceptions;
 
 namespace PixiEditor.ExtensionsModule
 {
@@ -30,7 +31,7 @@ namespace PixiEditor.ExtensionsModule
 
         public Extension LoadExtension(string path)
         {
-            return LoadExtension(new DirectoryInfo(path), XDocument.Load(path + "/config.xml"));
+            return LoadExtension(new DirectoryInfo(path), XDocument.Load(Path.Join(path, "config.xml")));
         }
 
         public Extension LoadExtension(DirectoryInfo directory, XDocument document)
@@ -53,14 +54,24 @@ namespace PixiEditor.ExtensionsModule
         /// <summary>
         /// Loads all extensions inside a directory.
         /// </summary>
-        public Extension[] LoadExtensions(DirectoryInfo directory)
+        public Extension[] LoadExtensions(DirectoryInfo directory, out ExtensionLoadingException[] exceptions)
         {
             List<Extension> extensions = new List<Extension>();
+            List<ExtensionLoadingException> loadingExceptions = new List<ExtensionLoadingException>();
 
             foreach (DirectoryInfo subDir in directory.GetDirectories())
             {
-                extensions.Add(LoadExtension(subDir.FullName));
+                try
+                {
+                    extensions.Add(LoadExtension(subDir.FullName));
+                }
+                catch (ExtensionLoadingException e)
+                {
+                    loadingExceptions.Add(e);
+                }
             }
+
+            exceptions = loadingExceptions.ToArray();
 
             return extensions.ToArray();
         }
@@ -68,15 +79,17 @@ namespace PixiEditor.ExtensionsModule
         /// <summary>
         /// Loads all extensions inside a directory.
         /// </summary>
-        public Extension[] LoadExtensions(string path)
+        public Extension[] LoadExtensions(string path, out ExtensionLoadingException[] exceptions)
         {
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
+
+                exceptions = Array.Empty<ExtensionLoadingException>();
                 return Array.Empty<Extension>();
             }
 
-            return LoadExtensions(new DirectoryInfo(path));
+            return LoadExtensions(new DirectoryInfo(path), out exceptions);
         }
 
         /// <summary>

@@ -140,7 +140,8 @@ namespace PixiEditor.ViewModels
 
             ExtensionManager = new ExtensionManager(new PlatformAccessor());
 
-            ExtensionManager.LoadExtensions(System.IO.Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PixiEditor", "Extensions"));
+            // Error logging will be implemented later
+            ExtensionManager.LoadExtensions(System.IO.Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PixiEditor", "Extensions"), out _);
 
             UndoManager.SetMainRoot(this);
             BitmapManager.PrimaryColor = ColorsSubViewModel.PrimaryColor;

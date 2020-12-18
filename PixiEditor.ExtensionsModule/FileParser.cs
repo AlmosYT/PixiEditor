@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace PixiEditor.ExtensionsModule
 {
@@ -25,6 +26,11 @@ namespace PixiEditor.ExtensionsModule
             fromExtension = from;
             toExtension = to;
             this.method = method;
+        }
+
+        public FileParser(XElement element)
+            : this(element.Attribute("From").Value, element.Attribute("To").Value, element.Attribute("Use").Value)
+        {
         }
 
         public override int GetHashCode()

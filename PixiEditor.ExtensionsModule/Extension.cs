@@ -14,22 +14,19 @@ namespace PixiEditor.ExtensionsModule
         private ParserCollection parsers = new ParserCollection();
         private Dictionary<string, string> menuItems = new Dictionary<string, string>();
         private Dictionary<string, Script> scriptFiles = new Dictionary<string, Script>();
-        private readonly string name;
-        private readonly string author;
-
-        internal XDocument ConfigFile => configFile;
-
-        internal Dictionary<string, Script> ScriptFiles => scriptFiles;
-
+        private ExtensionInfo extensionInfo;
+        
         public Dictionary<string, string> MenuItems => menuItems;
 
         public ParserCollection Parsers => parsers;
 
-        public string Name => name;
-
-        public string Author => author;
-
         public DirectoryInfo RootDirectory { get => rootDirectory; }
+
+        public ExtensionInfo Info => extensionInfo;
+
+        internal XDocument ConfigFile => configFile;
+
+        internal Dictionary<string, Script> ScriptFiles => scriptFiles;
 
         internal Extension(DirectoryInfo rootDirectory, XDocument config)
         {
@@ -39,30 +36,7 @@ namespace PixiEditor.ExtensionsModule
 
             foreach (FileInfo info in rootDirectory.EnumerateFiles("*.lua", SearchOption.AllDirectories))
             {
-                modules.Add(info.Name);
-
-                string relativePath = "/" + info.Name;
-
-                DirectoryInfo currentDir = info.Directory;
-
-                while (true)
-                {
-                    if (currentDir.FullName == rootDirectory.FullName)
-                    {
-                        relativePath = relativePath.Insert(0, ".");
-                        break;
-                    }
-
-                    relativePath += "/" + currentDir.Name;
-
-                    currentDir = currentDir.Parent;
-                }
-
-                Script script = new Script();
-
-                var val = script.DoFile(info.FullName);
-
-                ScriptFiles.Add(relativePath, script);
+                AddScriptFile(info, ref modules);
             }
 
             foreach (XElement menu in config.Root.Elements("Menu"))
@@ -75,24 +49,14 @@ namespace PixiEditor.ExtensionsModule
 
             foreach (XElement parser in config.Root.Elements("Parser"))
             {
-                parsers.Add(new FileParser(parser.Attribute("From").Value, parser.Attribute("To").Value, parser.Attribute("Use").Value));
+                parsers.Add(new FileParser(parser));
             }
 
-            name = config.Root.Attribute("Name")?.Value;
+            extensionInfo = new ExtensionInfo(config, Path.Join(rootDirectory.FullName, "config.xml"));
 
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                name = rootDirectory.Name;
-            }
+            ScriptLoader scriptLoader = new ScriptLoader(modules.ToArray());
 
-            author = config.Root.Attribute("Author")?.Value;
-
-            if (author == null)
-            {
-                author = "Unknown Author";
-            }
-
-            ScriptFiles.ToList().ForEach(x => x.Value.Options.ScriptLoader = new ScriptLoader(modules.ToArray()));
+            ScriptFiles.ToList().ForEach(x => x.Value.Options.ScriptLoader = scriptLoader);
         }
 
         public DynValue ExecuteParser(string from, string to)
@@ -136,6 +100,34 @@ namespace PixiEditor.ExtensionsModule
         public DynValue ExecuteFunction(string file, string method, params object[] parm)
         {
             return ScriptFiles[file].Call(ScriptFiles[file].Globals[method], parm);
+        }
+
+        private void AddScriptFile(FileInfo info, ref List<string> modules)
+        {
+            modules.Add(info.Name);
+
+            string relativePath = "/" + info.Name;
+
+            DirectoryInfo currentDir = info.Directory;
+
+            while (true)
+            {
+                if (currentDir.FullName == rootDirectory.FullName)
+                {
+                    relativePath = relativePath.Insert(0, ".");
+                    break;
+                }
+
+                relativePath += "/" + currentDir.Name;
+
+                currentDir = currentDir.Parent;
+            }
+
+            Script script = new Script();
+
+            var val = script.DoFile(info.FullName);
+
+            ScriptFiles.Add(relativePath, script);
         }
     }
 }
